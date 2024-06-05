@@ -1,15 +1,14 @@
 ---
-title: "My website and data analysis portfolio"
+title: "Data Analysis Portfolio"
 ---
 
-# Hello
+# Hello!
 
-### And hello again
+### My name is Austin Thrash, I am a Software Engineer/Data Analyst with a love for creating and learning new things.
 
-Welcome to **my website** and _data analysis portfolio._ 
+![](me.png){fig-alt="Picture of me" fig-align="center" width="152"}
 
+Welcome to my data analysis portfolio*.*
 
-* Please use the `Menu Bar` above to look around.
-* Have fun!
-
-**Feel free to change this text any way you want 😁!**
+-   Please use the `Menu Bar` above to look around.
+-   Have fun!

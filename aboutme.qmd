@@ -2,6 +2,24 @@
 title: "About me"
 ---
 
-Add some text and a figure describing myself.
+Hey there, I'm Austin Thrash. I grew up in Amarillo, Texas, and went to a high school with *just* 71 classmates. It was during those years that I fell in love with computer science and decided to chase my dreams in tech.
 
-For details, see the exercise instructions. 
+After high school, I moved to San Antonio to study at The University of Texas at San Antonio, where I earned my bachelor's degree in computer science. During my undergrad, I discovered a passion for data science, which led me to pursue an MSDA.
+
+Throughout my graduate studies, I've worked on a variety of projects, from market segmentation to predictive modeling using neural networks. I'm excited to keep learning new methods and techniques to sharpen my data analysis skills even more.
+
+## Photos I Like
+
+|                    My graduation ft. my parents                    |             My cat, Yoshimi              |       My girlfriend and I       |
+|:-------------------------:|:--------------:|:-----------------------:|
+| ![My parents and I at my graduation](graduation.jpeg){width="230"} | ![my cat, Yoshimi](cat.jpeg){width="97"} | ![](neworder.jpeg){width="226"} |
+
+## Links
+
+I couldn't really find anything that I thought was too interesting, however I want to recommend the book we used last semester, "An Introduction to Statistical Learning". I found it super useful in most situations.
+
+<https://www.statlearning.com/>
+
+I also had already created a portfolio website during my computer science degree if you'd like to check that out as well!
+
+<https://thrashsoftware.com/>
