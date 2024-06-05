@@ -11,7 +11,7 @@ Throughout my graduate studies, I've worked on a variety of projects, from marke
 ## Photos I Like
 
 |                    My graduation ft. my parents                    |             My cat, Yoshimi              |       My girlfriend and I       |
-|:-------------------------:|:--------------:|:-----------------------:|
+|:------------------------------------------------------------------:|:----------------------------------------:|:-------------------------------:|
 | ![My parents and I at my graduation](graduation.jpeg){width="230"} | ![my cat, Yoshimi](cat.jpeg){width="97"} | ![](neworder.jpeg){width="226"} |
 
 ## Links
