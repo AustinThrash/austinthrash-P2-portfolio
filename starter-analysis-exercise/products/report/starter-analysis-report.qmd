@@ -21,7 +21,7 @@ library(knitr)
 
 # Summary/Abstract
 
-*\*Summary will be finalized in later part of project*
+*\*Summary will be finalized in later part of project and will include setup and results*
 
 {{< pagebreak >}}
 
