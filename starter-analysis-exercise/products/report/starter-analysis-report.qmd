@@ -19,6 +19,8 @@ library(here)
 library(knitr)
 ```
 
+**Nicholas Stevenson contributed to this exercise - Assignment #2**
+
 # Summary/Abstract
 
 ***\*To be added in later part***
@@ -81,6 +83,8 @@ Examples of reproducible research projects can for instance be found in [@mckay2
 
 ## Exploratory/Descriptive analysis
 
+**Updated during Assignment #2 - Updated table**
+
 *Use a combination of text/tables/figures to explore and describe your data. Show the most important descriptive results here. Additional ones should go in the supplement. Even more can be in the R and Quarto files that are part of your project.*
 
 @tbl-summarytable shows a summary of the data.
@@ -97,6 +101,8 @@ knitr::kable(resulttable)
 
 ## Basic statistical analysis
 
+**Updated during Assignment #2 - Added figures**
+
 *To get some further insight into your data, if reasonable you could compute simple statistics (e.g. simple models with 1 predictor) to look for associations between your outcome(s) and each individual predictor variable. Though note that unless you pre-specified the outcome and main exposure, any "p\<0.05 means statistical significance" interpretation is not valid.*
 
 @fig-result shows a scatterplot figure produced by one of the R scripts.
@@ -105,8 +111,18 @@ knitr::kable(resulttable)
 #| label: fig-result
 #| fig-cap: "Height and weight stratified by gender."
 #| echo: FALSE
-knitr::include_graphics(here("starter-analysis-exercise","results","figures","height-weight-stratified.png"))
+
 ```
+
+```{r}
+knitr::include_graphics(here("starter-analysis-exercise","results","figures","Blood_type-Height.png"))
+```
+
+```{r}
+knitr::include_graphics(here("starter-analysis-exercise","results","figures","BMI-weight.png"))
+```
+
+Above we can see figures for Height and Blood_type (Boxplot), and BMI and weight (Scatterplot). From the box plot we can see the variance in height within and between different blood type groups. Since the dataset is so small, the graph is not exhibiting high variance within groups due to the fact that there are only so many respondents in each group. However from the boxplot, we can see that AB- and O+ experience the most variance within their respective groups. The scatterplot of BMI and Weight help us understand the relationship between the two variables. From the figure, we can notice a slight linear increase, as weight increase so does BMI, which is to be expected in this type of scenario.
 
 ## Full analysis
 
