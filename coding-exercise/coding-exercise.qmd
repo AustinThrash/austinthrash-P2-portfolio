@@ -1,5 +1,271 @@
 ---
 title: "R Coding Exercise"
+author: Austin Thrash
+date: today
+format:
+  html:
+    toc: true
+    toc-location: left
+    number-sections: true
+    highlight-style: github
 ---
 
-Placeholder file for the future R coding exercise.
+## Loading and checking data
+
+### Loading the package
+
+```{r}
+# This chunk of code loads in the dslabs package, we will be using the gapminder dataset for this execise.
+
+# Using library() to load dslabs package
+library("dslabs")
+```
+
+### Using the help() function
+
+```{r}
+# This chunk involves pulling up the help page for the gapminder dataset. This will give us an overview of the dataset and what it contains.
+
+# Using help() to view help page
+help(gapminder)
+```
+
+### Structure and Summary - str() & summary()
+
+```{r}
+# In this chunk we will be using the str and summary function to look at the data.
+
+# Using str() to display the internal structure of the dataset
+str(gapminder)
+
+# Using summary() to produce result summary of values
+summary(gapminder)
+```
+
+### Object Type - class()
+
+```{r}
+# This chunk outputs the object type of the 'gapminder' dataset.
+
+# Using class() to print object type of 'gapminder'
+class(gapminder)
+```
+
+## Processing Data
+
+```{r}
+# This chunk of code loads in the tidyverse package, creates a new dataset called 'africadata', and then prints the structure and a summary of data
+
+# Using the library() function again, but this time loading in the 'tidyverse' package
+library(tidyverse)
+
+# Using tidyverse to filter the gapminder dataset where continent equals Africa
+africadata <- gapminder %>% filter(continent == "Africa")
+
+# Printing the structure of the dataset
+str(africadata)
+
+# Printing a summary of the dataset
+summary(africadata)
+```
+
+```{r}
+# This chunk will create two new datasets using the four 3 variables mentioned in the assignment instructions.
+
+# Using the gapminder dataset to filter and select the correct columns (infant_mortality & life_expectancy)
+p1_africadata <- gapminder %>% 
+  # Filtering the data to only include the continent, Africa.
+  filter(continent == "Africa") %>% 
+  # Selecting the columns we want
+  select(infant_mortality, life_expectancy)
+
+# Doing the same processes as before, filtering and selecting the proper columns (population & life_expectancy)
+p2_africadata <- gapminder %>% 
+  # Filtering the data to only include the continent, Africa.
+  filter(continent == "Africa") %>% 
+  # Selecting the columns we want
+  select(population, life_expectancy)
+
+# str() and summary() to look at the data in both new objects/datasets
+# P1 Dataset
+str(p1_africadata)
+summary(p1_africadata)
+
+# P2 Dataset
+str(p2_africadata)
+summary(p2_africadata)
+
+```
+
+## Plotting
+
+### Life Expectancy vs Infant Mortality
+
+```{r}
+# This chunk generates a plot when displaying life_expectancy as a function of infant_mortality The plot is stored in a variable and is displayed using a print function.
+
+# Creating the plot, x-axis is infant_mortality and the y-axis is life_expectancy.
+plot1 <- ggplot(p1_africadata, aes(x = infant_mortality, y = life_expectancy)) + 
+  # Specifying this as a scatterplot or point graph
+  geom_point() + 
+  # Adding labels to the graph/axis
+  labs(title = "Life Expectancy vs Infant Mortality", 
+       x = "Infant Mortality", 
+       y = "Life Expectancy")
+
+# Printing plot
+print(plot1)
+```
+
+### Life Expectancy vs Population Size (Log Scale)
+
+```{r}
+# This chunk generates a plot when displaying life_expectancy as a function of population. The plot is stored in a variable and is displayed using a print function.
+
+# Creating the plot, x-axis is population and the y-axis is life_expectancy.
+plot2 <- ggplot(p2_africadata, aes(x = population, y = life_expectancy)) + 
+  # Specifying this as a scatterplot or point graph
+  geom_point() + 
+  # Setting the x-axis to log scale
+  scale_x_log10() + 
+  # Adding labels to graph/axis
+  labs(title = "Life Expectancy vs Population Size (Log Scale)", 
+       x = "Population Size (Log Scale)", 
+       y = "Life Expectancy")
+
+# Printing plot
+print(plot2)
+```
+
+### 'Streaks' of Data
+
+The plots above exhibit 'streaks' of data, this could be due to the fact that there is a 'year' column in the dataset, meaning that if a country has multiple years of data, that country will appear on the graph for each year this data was recorded thus creating 'streaks' on the plot. We can visualize this by using the color option in ggplot to highlight the different countries.
+
+```{r}
+# This chunk creates the same plot as above, however makes use of the color option in ggplot to highlight each country. This is to illustrate how having a time variable creates the streaks in the plots
+
+# Creating the plot and storing it in the plot3 variable
+plot3 <- ggplot(africadata, aes(x = population, y = life_expectancy, colour = country)) + 
+  # Setting as scatterplot/point graph
+  geom_point() + 
+  # Applying log scale to x-axis
+  scale_x_log10() + 
+  # Adding labels to graph
+  labs(title = "Life Expectancy vs Population Size (Log Scale)", 
+       x = "Population Size (Log Scale)", 
+       y = "Life Expectancy")
+
+# Printing plot
+print(plot3)
+```
+
+## More Data Processing
+
+### Years with missing data
+
+```{r}
+# This chunk displays which years having missing data for infant mortality, it uses the tidyverse package to filter and select the proper years. The years are then printed using a print function.
+
+# Finding the years in africadata that having missing values for infant mortality a storing it in the variable missing_years
+missing_years <- africadata %>%
+  # Filtering data to find NA values in infant_mortality
+  filter(is.na(infant_mortality)) %>%
+  # Selecting the 'year' value that has NA values in infant_mortality
+  select(year) %>%
+  # Applying distinct so the years don't duplicate and are distinct
+  distinct()
+
+# Printing years with missing values in infant_mortality
+print(missing_years)
+```
+
+We can see that there are missing values for infant_mortality for every year up to 1981 and then again in 2016. Seeing as those include missing values, we should avoid those years and use the year suggested in the assignment instructions, 2000.
+
+### 2000 Africa Data
+
+```{r}
+# This chunk creates a new dataset featuring only the continent, Africa, and the year 2000. This will be saved under the variable africadata_2000.
+
+# Filtering and saving the proper data into the new variable.
+africadata_2000 <- gapminder %>% 
+  # Filtering the data to only include the continent and year, Africa and 2000.
+  filter(continent == "Africa" & year == 2000)
+
+# Displaying the structure of the new dataset
+str(africadata_2000)
+
+# Displaying a summary of the data
+summary(africadata_2000)
+```
+
+## More Plotting
+
+### Life Expectancy vs Infant Mortality
+
+```{r}
+# This chunk generates a plot when displaying life_expectancy as a function of infant_mortality for the year 2000 in africa. The plot is stored in a variable and is displayed using a print function.
+
+# Creating the plot, x-axis is infant_mortality and the y-axis is life_expectancy.
+plot4 <- ggplot(africadata_2000, aes(x = infant_mortality, y = life_expectancy)) + 
+  # Specifying this as a scatterplot or point graph
+  geom_point() + 
+  # Adding labels to the graph/axis
+  labs(title = "Life Expectancy vs Infant Mortality", 
+       x = "Infant Mortality", 
+       y = "Life Expectancy")
+
+# Printing plot
+print(plot4)
+```
+
+### Life Expectancy vs Population Size (Log Scale)
+
+```{r}
+# This chunk generates a plot when displaying life_expectancy as a function of population. The plot is stored in a variable and is displayed using a print function.
+
+# Creating the plot, x-axis is population and the y-axis is life_expectancy.
+plot5 <- ggplot(africadata_2000, aes(x = population, y = life_expectancy)) + 
+  # Specifying this as a scatterplot or point graph
+  geom_point() + 
+  # Setting the x-axis to log scale
+  scale_x_log10() + 
+  # Adding labels to graph/axis
+  labs(title = "Life Expectancy vs Population Size (Log Scale)", 
+       x = "Population Size (Log Scale)", 
+       y = "Life Expectancy")
+
+# Printing plot
+print(plot5)
+```
+
+Based on those plots, there seems to still be a negative correlation between infant mortality and life expectancy, and no noticeable correlation between population size and life expectancy.
+
+## Simple Model Fits
+
+### Fit 1: Life Expectancy \~ Infant Mortality
+
+```{r}
+# This chunk of code involves fitting life expectancy as the outcome and infant mortality as the predictor. The model is saved to the new variables fit1 and then a summary of the model is printed using summary()
+
+# Fit 1: Life Expectancy as a function of Infant Mortality
+fit1 <- lm(life_expectancy ~ infant_mortality, data = africadata_2000)
+
+# Printing a summary of the model
+summary(fit1)
+```
+
+From the result of this model, we can see that for each unit increase in infant_mortality, there is a 0.18916 decrease in life_expectancy. If we look at the p-value, we can conclude that infant_mortality has a statistically significant relationship with life_expectancy.
+
+### Fit 2: Life Expectancy \~ Population
+
+```{r}
+# This chunk of code involves fitting life expectancy as the outcome and population as the predictor. The model is saved to the new variables fit2 and then a summary of the model is printed using summary()
+
+# Fit 1: Life Expectancy as a function of Population
+fit2 <- lm(life_expectancy ~ population, data = africadata_2000)
+
+# Printing a summary of the model
+summary(fit2)
+```
+
+Unlike the previous model, the p-value for population leads us to the conclusion that there is no statistically significant relationship between population and life_expectancy. Therefore, the population variable may not be a good predictor to use in this model unless it's modeled using a different method(like taking the log or interaction terms using '\*').
