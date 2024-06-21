@@ -1,6 +1,6 @@
 ---
 title: "An example cleaning script"
-author: "Andreas Handel"
+author: "Nicholas Stevenson"
 date: "2023-01-03"
 output: html_document
 ---
@@ -87,6 +87,9 @@ Now let's look at the `Weight` variable. There is a person with weight of 7000, 
 To be able to analyze the data, we'll remove those individuals as well.
 
 ```{r}
+
+d3 <- d2 %>%  dplyr::filter(Weight != 7000)
+skimr::skim(d3)
 d3 <- d2 %>%  dplyr::filter(Weight != 7000) 
 ```
 
