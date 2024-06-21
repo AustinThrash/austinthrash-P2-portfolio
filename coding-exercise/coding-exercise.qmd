@@ -270,15 +270,16 @@ summary(fit2)
 
 Unlike the previous model, the p-value for population leads us to the conclusion that there is no statistically significant relationship between population and life_expectancy. Therefore, the population variable may not be a good predictor to use in this model unless it's modeled using a different method(like taking the log or interaction terms using '\*').
 
-
 # **Part 3**
+
 ## **This section contributed by Nicholas Stevenson**
 
-Pick another dataset from dslabs, whichever one you want. Unfortunately, the dslabs package doesn’t have a nice website. But you can go to its offical CRAN entryLinks to an external site. and click on Reference Manual. The pdf lists the various other datasets and for each provides a brief explanation.
+Pick another dataset from dslabs, whichever one you want. Unfortunately, the dslabs package doesn't have a nice website. But you can go to its offical CRAN entryLinks to an external site. and click on Reference Manual. The pdf lists the various other datasets and for each provides a brief explanation.
 
 Once you chose one of the datasets, write R code to go through similar steps as above. Specifically, do the following:
 
 **1. Explore the dataset**
+
 ```{r}
 # Load the dataset
 data("murders")
@@ -286,7 +287,9 @@ data("murders")
 # Display the first few rows of the dataset
 head(murders)
 ```
+
 **2. Do any processing/cleaning you want to do.**
+
 ```{r}
 # Add a murder rate column (murders per 100,000)
 murders <- murders %>% 
@@ -296,7 +299,9 @@ murders <- murders %>%
 head(murders)
 
 ```
+
 **3. Make a few exploratory figures. Optionally, also some tables.**
+
 ```{r}
 # Total murders by region
 ggplot(murders, aes(x = region, y = total)) +
@@ -304,6 +309,7 @@ ggplot(murders, aes(x = region, y = total)) +
   labs(title = "Total Murders by Region", x = "Region", y = "Total Murders") +
   theme_minimal()
 ```
+
 ```{r}
 # Murder rate by state
 ggplot(murders, aes(x = reorder(state, murder_rate), y = murder_rate)) +
@@ -312,6 +318,7 @@ ggplot(murders, aes(x = reorder(state, murder_rate), y = murder_rate)) +
   labs(title = "Murder Rate by State", x = "State", y = "Murder Rate (per 100,000)") +
   theme_minimal()
 ```
+
 ```{r}
 # Summary statistics by region
 summary_table <- murders %>% 
@@ -323,7 +330,9 @@ summary_table <- murders %>%
   )
 summary_table
 ```
+
 **4. Run some simple statistical model(s). Your choice.**
+
 ```{r}
 # Fit the linear regression model
 fit <- lm(murder_rate ~ population, data = murders)
@@ -331,8 +340,7 @@ fit <- lm(murder_rate ~ population, data = murders)
 # Summary of the model
 summary(fit)
 ```
+
 **5. Report the results from the model(s).**
 
 The p-value for the population coefficient (0.512) is much greater than 0.05, indicating that the relationship between population size and murder rate is not statistically significant.
-
-
