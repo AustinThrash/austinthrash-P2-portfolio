@@ -1,6 +1,6 @@
 ---
 title: "An example cleaning script"
-author: "Andreas Handel"
+author: "Nicholas Stevenson"
 date: "2023-01-03"
 output: html_document
 ---
@@ -87,11 +87,7 @@ Now let's look at the `Weight` variable. There is a person with weight of 7000, 
 To be able to analyze the data, we'll remove those individuals as well.
 
 ```{r}
-<<<<<<< HEAD
-d3 <- d2 %>%  dplyr::filter(Weight != 7000) 
-=======
-d3 <- d2 %>%  dplyr::filter(Weight != 7000) %>% tidyr::drop_na()
->>>>>>> 9d67591546b9f9ec82ddef714aa9c62199c9a156
+d3 <- d2 %>%  dplyr::filter(Weight != 7000)
 skimr::skim(d3)
 ```
 
@@ -131,11 +127,7 @@ See here for some suggestions on how to store your processed data:
 http://www.sthda.com/english/wiki/saving-data-into-r-data-format-rds-and-rdata
 
 ```{r}
-<<<<<<< HEAD
-save_data_location <- here::here("starter-analysis-exercise","data","processed-data","processeddata2.rds")
-=======
 save_data_location <- here::here("starter-analysis-exercise","data","processed-data","processeddata.rds")
->>>>>>> 9d67591546b9f9ec82ddef714aa9c62199c9a156
 saveRDS(processeddata, file = save_data_location)
 ```
 
