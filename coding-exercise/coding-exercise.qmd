@@ -270,6 +270,7 @@ summary(fit2)
 
 Unlike the previous model, the p-value for population leads us to the conclusion that there is no statistically significant relationship between population and life_expectancy. Therefore, the population variable may not be a good predictor to use in this model unless it's modeled using a different method(like taking the log or interaction terms using '\*').
 
+
 # **Part 3**
 ## **This section contributed by Nicholas Stevenson**
 
@@ -333,3 +334,5 @@ summary(fit)
 **5. Report the results from the model(s).**
 
 The p-value for the population coefficient (0.512) is much greater than 0.05, indicating that the relationship between population size and murder rate is not statistically significant.
+
+

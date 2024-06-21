@@ -87,8 +87,10 @@ Now let's look at the `Weight` variable. There is a person with weight of 7000, 
 To be able to analyze the data, we'll remove those individuals as well.
 
 ```{r}
+
 d3 <- d2 %>%  dplyr::filter(Weight != 7000)
 skimr::skim(d3)
+d3 <- d2 %>%  dplyr::filter(Weight != 7000) 
 ```
 
 Now checking the `Gender` variable. Gender should be a categorical/factor variable but is loaded as character. We can fix that with simple base R code to mix things up.
@@ -127,7 +129,8 @@ See here for some suggestions on how to store your processed data:
 http://www.sthda.com/english/wiki/saving-data-into-r-data-format-rds-and-rdata
 
 ```{r}
-save_data_location <- here::here("starter-analysis-exercise","data","processed-data","processeddata.rds")
+save_data_location <- here::here("starter-analysis-exercise","data","processed-data","processeddata2.rds")
+
 saveRDS(processeddata, file = save_data_location)
 ```
 
@@ -139,8 +142,3 @@ Note the use of the `here` package and `here` command to specify a path relative
 
 Removing anyone observation with "faulty" or missing data is one approach. It's often not the best. based on your question and your analysis approach, you might want to do cleaning differently (e.g. keep observations with some missing information).
 
-
-<<<<<<< HEAD
-
-=======
->>>>>>> 9d67591546b9f9ec82ddef714aa9c62199c9a156

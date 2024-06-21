@@ -108,9 +108,9 @@ ggsave(filename = figure_file, plot=p4)
 
 ```{r}
 #boxplot with new variable
-p5 <- mydata %>% ggplot(aes(x=Height, y=BMI)) + geom_boxplot()
+p5 <- mydata %>% ggplot(aes(x=Blood_type, y=Height)) + geom_boxplot()
 plot(p5)
-figure_file = here("starter-analysis-exercise","results","figures","Height-BMI.png")
+figure_file = here("starter-analysis-exercise","results","figures","Blood_type-Height.png")
 ggsave(filename = figure_file, plot=p5) 
 ```
 
