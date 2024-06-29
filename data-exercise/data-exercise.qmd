@@ -1,0 +1,261 @@
+---
+title: "Data Exercise - Assignment #4"
+author: Austin Thrash
+date: today
+format:
+  html:
+    toc: true
+    toc-location: left
+    number-sections: true
+    highlight-style: github
+---
+
+# Assignment #4 - Option 2: Generate and explore synthetic data.
+
+### Loading in packages
+
+```{r}
+# This chunk is used to load in all necessary packages for analysis.
+
+library(MASS)
+library(corrplot)
+library(gridExtra)
+library(grid)
+library(ggplot2)
+library(simstudy)
+library(caret)
+library(randomForest)
+library(class)
+```
+
+### Generating synthetic dataset
+
+I was not sure how many variables to generate for the synthetic dataset, so I only defined seven variables, 5 categorical, and 3 numerical. Here are the variables I generated:\
+
+| Variable         | Definition                             |
+|------------------|----------------------------------------|
+| Height           | Normal Distribution, in pounds.        |
+| Weight           | Normal Distribution, in inches         |
+| BMI              | Generated using weight and height      |
+| is_smoker        | 30/70 split, Categorical (yes/no)      |
+| health_lifestyle | 50/50 split, Categorical (yes/no)      |
+| physical_active  | 1 to 8 scale, Categorical              |
+| diff_walk        | 20/80 split, Categorical (yes/no)      |
+| stroke           | Categorical (yes/no), 10% have strokes |
+
+```{r}
+#This chunk of code defines variables using the defData() function. The chunk defines height, weight, BMI, is_smoker, health_lifestyle, physical_active, diff_walk, and stroke. These variables will be used to generate a dataset with a 1000 observations.
+
+# Define the data structure
+def <- defData(varname = "height", dist = "normal", formula = 66, variance = 10)  # Height in inches, average 5'6"
+def <- defData(def, varname = "weight", dist = "normal", formula = 150, variance = 25)  # Weight in pounds
+def <- defData(def, varname = "is_smoker", dist = "categorical", formula = "0.3;0.7")  # 30% smokers, 70% non-smokers
+def <- defData(def, varname = "healthy_lifestyle", dist = "categorical", formula = "0.5;0.5")  # 50% healthy, 50% not
+def <- defData(def, varname = "physical_active", dist = "uniformInt", formula = "1;8")  # Physical activity level, 1-8 scale
+def <- defData(def, varname = "diff_walk", dist = "categorical", formula = "0.2;0.8")  # 20% have difficulty walking, 80% don't
+
+def <- defData(def, varname = "stroke", dist = "binary", formula = 0.5)  # 50% have had a stroke - Doing this for a balanced dataset
+
+# Add the BMI variable which depends on height and weight
+def <- defData(def, varname = "BMI", dist = "nonrandom", formula = "703 * weight / (height ^ 2)")
+
+# Generate the synthetic data
+set.seed(123)  # For reproducibility
+synth_data <- genData(1000, def)  # Generate 1000 records
+
+```
+
+### Summary of 'synth_data'
+
+```{r}
+# This chunk is used to display a summary of the synthetic dataset that was generated.
+
+synth_data <- as.data.frame(synth_data)
+
+summary(synth_data)
+```
+
+## Exploratory Analysis
+
+### Distributions
+
+```{r}
+# This chunk of code includes a function to compile all of the plots generated into one list so they could all be viewed together in one image.
+
+# Function to create histograms for each variable
+create_histograms <- function(data) {
+  plots <- list()
+  for (col_name in names(data)) {
+    if (is.numeric(data[[col_name]])) {
+      p <- ggplot(data, aes_string(x = col_name)) + 
+        geom_histogram(binwidth = 1, fill = "salmon", color = "black") +
+        labs(title = col_name) +
+        theme_minimal()
+    } else {
+      p <- ggplot(data, aes_string(x = col_name)) + 
+        geom_bar(fill = "salmon", color = "black") +
+        labs(title = col_name) +
+        theme_minimal()
+    }
+    plots[[col_name]] <- p
+  }
+  return(plots)
+}
+
+# Create histograms for all variables
+histograms <- create_histograms(synth_data)
+
+# Arrange the plots in a grid
+n <- length(histograms)
+nCol <- ceiling(sqrt(n))
+nRow <- ceiling(n / nCol)
+combined_plot <- marrangeGrob(grobs = histograms, nrow = nRow, ncol = nCol)
+
+combined_plot
+```
+
+Here we can see a distribution of all of our variables. One thing that can be noted is that the response variable (stroke) is evenly distributed which should help the results of our models.
+
+### Correlation Matrix
+
+```{r}
+# Select only the numerical variables for the correlation matrix
+numerical_vars <- synth_data[, c("height", "weight", "BMI", "physical_active")]
+
+# Calculate the correlation matrix
+correlation_matrix <- cor(numerical_vars)
+
+# Print the correlation matrix
+corrplot(correlation_matrix, method = "color", type = "upper", order = "hclust",
+         tl.col = "black", tl.srt = 45, addCoef.col = "black", number.cex = 0.5)
+```
+
+From the correlation matrix, we can see some correlation between BMI and height as well as BMI and weight. However this make sense as BMI is calculated using both height and weight. The correlation between the other variables looks very minimal.
+
+### Variable Importance
+
+```{r}
+# Convert categorical variables to factors
+synth_data$is_smoker <- factor(synth_data$is_smoker, labels = c("Yes", "No"))
+synth_data$healthy_lifestyle <- factor(synth_data$healthy_lifestyle, labels = c("Yes", "No"))
+synth_data$diff_walk <- factor(synth_data$diff_walk, labels = c("Yes", "No"))
+synth_data$stroke <- factor(synth_data$stroke, labels = c("Yes", "No"))
+synth_data$physical_active <- as.factor(synth_data$physical_active)
+
+# Fit an initial model
+initial_model <- glm(stroke ~ height + weight + BMI + is_smoker + healthy_lifestyle + physical_active + diff_walk, 
+                     data = synth_data, 
+                     family = binomial)
+
+# Perform stepwise selection
+stepwise_model <- stepAIC(initial_model, direction = "both")
+
+# Print the summary of the final model
+summary(stepwise_model)
+```
+
+In this synthetic dataset, it looks as if healthy_lifestyle has the strongest correlation with the response variable (stoke). This was discovered using stepwise selection model going in both directions. Although healthy_lifestyle does not have a statistically significant p-value we can not conclude that there is a statistical significant relationship between this feature and the response variable. Even though this is the case, we will keep this variable in mind when modeling.
+
+## Statistical Analysis
+
+For the statistical analysis, we will first setup the training control, then we will train logistic regression, random forest, and KNN models.
+
+```{r}
+# Define the training control
+train_control <- trainControl(method = "cv", number = 5)  # 10-fold cross-validation
+```
+
+### Logistic Regression
+
+```{r}
+log_model <- train(stroke ~ height + weight + BMI + is_smoker + healthy_lifestyle + physical_active + diff_walk,
+                   data = synth_data, 
+                   method = "glm", 
+                   family = "binomial",
+                   trControl = train_control)
+
+print(log_model)
+```
+
+#### Results
+
+```{r}
+summary(log_model)
+```
+
+From the results we can see that the logistic regression model achieved an accuracy of 47.90%, which is worse than random chance
+
+### Random Forest
+
+```{r}
+rf_model <- train(stroke ~ height + weight + BMI + is_smoker + healthy_lifestyle + physical_active + diff_walk,
+                  data = synth_data, 
+                  method = "rf", 
+                  trControl = train_control,
+                  importance = TRUE)
+```
+
+#### Results
+
+```{r}
+print(rf_model)
+```
+
+The random forest model achieved an accuracy of 51.29%, this is pretty similar to the logistic regression model, not much improvement has occurred.
+
+### KNN
+
+```{r}
+
+# K-Nearest Neighbors
+knn_model <- train(stroke ~ height + weight + BMI + is_smoker + healthy_lifestyle + physical_active + diff_walk,
+                   data = synth_data, 
+                   method = "knn", 
+                   trControl = train_control,
+                   tuneLength = 10)  # can change to try different k values
+```
+
+#### Results
+
+```{r}
+print(knn_model)
+```
+
+We can see from the results of the KNN model that this method achieved an accuracy of 53.19%, with the best K value being 5. This is not much of an improvement to the previous model.
+
+## Analysis Results
+
+```{r}
+# This chunk gets max accuracy from each model, builds a data frame of the accuracies, and then creates a bar plot. The bar plot will display the three models and include a label of the accuracy.
+
+# Extract accuracy from the models
+log_accuracy <- max(log_model$results$Accuracy)
+rf_accuracy <- max(rf_model$results$Accuracy)
+knn_accuracy <- max(knn_model$results$Accuracy)
+
+# Create a data frame for the accuracies
+accuracy_df <- data.frame(
+  Model = c("Logistic Regression", "Random Forest", "K-Nearest Neighbors"),
+  Accuracy = c(log_accuracy, rf_accuracy, knn_accuracy)
+)
+
+# Plot the accuracies using ggplot2
+ggplot(accuracy_df, aes(x = Model, y = Accuracy, fill = Model)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  geom_text(aes(label = round(Accuracy, 4)), vjust = -0.5) +
+  labs(title = "Model Accuracy Comparison",
+       x = "Model",
+       y = "Accuracy") +
+  scale_fill_brewer(palette = "Set1")
+```
+
+From the results we can see that KNN performed the best overall, however its accuracy is only 53.2%, meaning this is only slightly better than random chance. This could be due to the fact that there are not very many predictors in that data or the fact that all this data is generated synthetically. All the predictors displayed a normal distribution so it could be possible that the data is too normal and doesn't display much variance. Here are some ways to maybe improve the data to get better results (however, altering the data generation to improve results kinda defeats the purpose of statistical analysis as you are artificially guiding the narrative by creating the data solely to improve results):
+
+-   Adding more predictors
+
+-   Adding more randomness/variance to the data
+
+-   Adding more observations
+
+-   Trying different models.
