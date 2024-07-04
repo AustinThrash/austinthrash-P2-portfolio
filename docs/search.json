@@ -119,6 +119,48 @@
     "text": "Hello!\n\nMy name is Austin Thrash, I am a Software Engineer/Data Analyst with a love for creating and learning new things.\n\n\n\n\n\nWelcome to my data analysis portfolio.\n\nPlease use the Menu Bar above to look around.\nHave fun!"
   },
   {
+    "objectID": "cdcdata-exercise/cdcdata-exercise.html",
+    "href": "cdcdata-exercise/cdcdata-exercise.html",
+    "title": "CDC Data Exercise",
+    "section": "",
+    "text": "library(here)\n\nhere() starts at /Users/austin/Desktop/Practicum2/austinthrash-P2-portfolio\n\nlibrary(readr)\nlibrary(gridExtra)\nlibrary(grid)\nlibrary(ggplot2)\nlibrary(dplyr)\n\n\nAttaching package: 'dplyr'\n\n\nThe following object is masked from 'package:gridExtra':\n\n    combine\n\n\nThe following objects are masked from 'package:stats':\n\n    filter, lag\n\n\nThe following objects are masked from 'package:base':\n\n    intersect, setdiff, setequal, union"
+  },
+  {
+    "objectID": "cdcdata-exercise/cdcdata-exercise.html#importing-packages",
+    "href": "cdcdata-exercise/cdcdata-exercise.html#importing-packages",
+    "title": "CDC Data Exercise",
+    "section": "",
+    "text": "library(here)\n\nhere() starts at /Users/austin/Desktop/Practicum2/austinthrash-P2-portfolio\n\nlibrary(readr)\nlibrary(gridExtra)\nlibrary(grid)\nlibrary(ggplot2)\nlibrary(dplyr)\n\n\nAttaching package: 'dplyr'\n\n\nThe following object is masked from 'package:gridExtra':\n\n    combine\n\n\nThe following objects are masked from 'package:stats':\n\n    filter, lag\n\n\nThe following objects are masked from 'package:base':\n\n    intersect, setdiff, setequal, union"
+  },
+  {
+    "objectID": "cdcdata-exercise/cdcdata-exercise.html#importing-data",
+    "href": "cdcdata-exercise/cdcdata-exercise.html#importing-data",
+    "title": "CDC Data Exercise",
+    "section": "0.2 Importing data",
+    "text": "0.2 Importing data\n\n# This chunk is used to import that data.\n\n# Define the location of the data file\ndata_location &lt;- here::here(\"cdcdata-exercise\", \"cdcdata_sample.csv\")\n\n# Read the CSV file into a dataframe\ncdcdata &lt;- read_csv(data_location)\n\nRows: 1343 Columns: 12\n── Column specification ────────────────────────────────────────────────────────\nDelimiter: \",\"\nchr (7): Data As Of, Start Date, End Date, Group, State, Sex, Age Group\ndbl (5): COVID-19 Deaths, Total Deaths, Pneumonia Deaths, Influenza Deaths, ...\n\nℹ Use `spec()` to retrieve the full column specification for this data.\nℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.\n\n# View the first few rows of the dataframe\nhead(cdcdata)\n\n# A tibble: 6 × 12\n  `Data As Of` `Start Date` `End Date` Group    State         Sex    `Age Group`\n  &lt;chr&gt;        &lt;chr&gt;        &lt;chr&gt;      &lt;chr&gt;    &lt;chr&gt;         &lt;chr&gt;  &lt;chr&gt;      \n1 09/27/2023   01/01/2020   09/23/2023 By Total United States All S… All Ages   \n2 09/27/2023   01/01/2020   09/23/2023 By Total United States All S… Under 1 ye…\n3 09/27/2023   01/01/2020   09/23/2023 By Total United States All S… 0-17 years \n4 09/27/2023   01/01/2020   09/23/2023 By Total United States All S… 1-4 years  \n5 09/27/2023   01/01/2020   09/23/2023 By Total United States All S… 5-14 years \n6 09/27/2023   01/01/2020   09/23/2023 By Total United States All S… 15-24 years\n# ℹ 5 more variables: `COVID-19 Deaths` &lt;dbl&gt;, `Total Deaths` &lt;dbl&gt;,\n#   `Pneumonia Deaths` &lt;dbl&gt;, `Influenza Deaths` &lt;dbl&gt;,\n#   `Pneumonia, Influenza, or COVID-19 Deaths` &lt;dbl&gt;"
+  },
+  {
+    "objectID": "cdcdata-exercise/cdcdata-exercise.html#cleaning-data",
+    "href": "cdcdata-exercise/cdcdata-exercise.html#cleaning-data",
+    "title": "CDC Data Exercise",
+    "section": "1.1 Cleaning data",
+    "text": "1.1 Cleaning data\n\n# This chunk will be used to clean the data. The data was cleaned prior, we really just need to drop the columns we arent using.\n\n# Removing unused columns\ncdcdata$`Data As Of` &lt;- NULL\ncdcdata$`Start Date` &lt;- NULL\ncdcdata$`End Date` &lt;- NULL\ncdcdata$Group &lt;- NULL\n\nnames(cdcdata) &lt;- make.names(names(cdcdata))"
+  },
+  {
+    "objectID": "cdcdata-exercise/cdcdata-exercise.html#exploratory-analysis",
+    "href": "cdcdata-exercise/cdcdata-exercise.html#exploratory-analysis",
+    "title": "CDC Data Exercise",
+    "section": "1.2 Exploratory Analysis",
+    "text": "1.2 Exploratory Analysis\n\n1.2.1 Summary()\n\nsummary(cdcdata)\n\n    State               Sex             Age.Group         COVID.19.Deaths  \n Length:1343        Length:1343        Length:1343        Min.   :      0  \n Class :character   Class :character   Class :character   1st Qu.:    528  \n Mode  :character   Mode  :character   Mode  :character   Median :   1547  \n                                                          Mean   :   7597  \n                                                          3rd Qu.:   4344  \n                                                          Max.   :1146774  \n  Total.Deaths      Pneumonia.Deaths  Influenza.Deaths \n Min.   :      10   Min.   :      0   Min.   :    0.0  \n 1st Qu.:    7590   1st Qu.:    537   1st Qu.:   16.0  \n Median :   17862   Median :   1554   Median :   36.0  \n Mean   :   81653   Mean   :   7705   Mean   :  150.4  \n 3rd Qu.:   45996   3rd Qu.:   4171   3rd Qu.:   87.5  \n Max.   :12303399   Max.   :1162844   Max.   :22229.0  \n Pneumonia..Influenza..or.COVID.19.Deaths\n Min.   :      0.0                       \n 1st Qu.:    841.5                       \n Median :   2385.0                       \n Mean   :  11629.8                       \n 3rd Qu.:   6529.5                       \n Max.   :1760095.0                       \n\n\n\n\n1.2.2 Distributions\nplots should include percentages if categorical, for continuous, plot and then summarize its mean and standard dev\n\n# Calculate counts and percentages for Age Group\ncdcdata_summary &lt;- cdcdata %&gt;%\n  group_by(Age.Group) %&gt;%\n  summarise(count = n()) %&gt;%\n  mutate(percentage = count / sum(count) * 100)\n\n# Plot with percentage labels\nggplot(cdcdata_summary, aes(x = Age.Group, y = count)) + \n  geom_bar(stat = \"identity\", fill = \"salmon\", color = \"black\") +\n  geom_text(aes(label = paste0(round(percentage, 1), \"%\")), vjust = -0.5) +\n  labs(title = \"Age Group\", x = \"Age Group\", y = \"Count\") +\n  theme_minimal()\n\n\n\n\n\n# Calculate counts and percentages for Sex\ncdcdata_summary &lt;- cdcdata %&gt;%\n  group_by(Sex) %&gt;%\n  summarise(count = n()) %&gt;%\n  mutate(percentage = count / sum(count) * 100)\n\n# Plot with percentage labels\nggplot(cdcdata_summary, aes(x = Sex, y = count)) + \n  geom_bar(stat = \"identity\", fill = \"salmon\", color = \"black\") +\n  geom_text(aes(label = paste0(round(percentage, 1), \"%\")), vjust = -0.5) +\n  labs(title = \"Sex\", x = \"Sex\", y = \"Count\") +\n  theme_minimal()\n\n\n\n\n\nggplot(cdcdata, aes_string(x = \"Pneumonia..Influenza..or.COVID.19.Deaths\")) + \n        geom_bar(fill = \"salmon\", color = \"black\") +\n        labs(title = \"Pneumonia, Influenza, or COVID-19 Deaths\") +\n        theme_minimal()\n\nWarning: `aes_string()` was deprecated in ggplot2 3.0.0.\nℹ Please use tidy evaluation idioms with `aes()`.\nℹ See also `vignette(\"ggplot2-in-packages\")` for more information.\n\n\n\n\n\n\nggplot(cdcdata, aes_string(x = \"Influenza.Deaths\")) + \n        geom_histogram(binwidth = 1, fill = \"salmon\", color = \"black\") +\n        labs(title = \"Influenza Deaths\") +\n        theme_minimal()\n\n\n\n\n\nggplot(cdcdata, aes_string(x = \"Pneumonia.Deaths\")) + \n        geom_bar(fill = \"salmon\", color = \"black\") +\n        labs(title = \"Pneumonia Deaths\") +\n        theme_minimal()\n\n\n\n\n\nggplot(cdcdata, aes_string(x = \"COVID.19.Deaths\")) + \n        geom_bar(fill = \"salmon\", color = \"black\") +\n        labs(title = \"COVID-19 Deaths\") +\n        theme_minimal()\n\n\n\n\n\nggplot(cdcdata, aes_string(x = \"Total.Deaths\")) + \n        geom_bar(fill = \"salmon\", color = \"black\") +\n        labs(title = \"Total Deaths\") +\n        theme_minimal()\n\n\n\n\n\nmean(cdcdata$Pneumonia..Influenza..or.COVID.19.Deaths)\n\n[1] 11629.85\n\nsd(cdcdata$Pneumonia..Influenza..or.COVID.19.Deaths)\n\n[1] 66245.64\n\n\n\nmean(cdcdata$Influenza.Deaths)\n\n[1] 150.4058\n\nsd(cdcdata$Influenza.Deaths)\n\n[1] 826.2635\n\n\n\nmean(cdcdata$Pneumonia.Deaths)\n\n[1] 7705.152\n\nsd(cdcdata$Pneumonia.Deaths)\n\n[1] 43860.05\n\n\n\nmean(cdcdata$COVID.19.Deaths)\n\n[1] 7596.808\n\nsd(cdcdata$COVID.19.Deaths)\n\n[1] 43164.85\n\n\n\nmean(cdcdata$Total.Deaths)\n\n[1] 81653.12\n\nsd(cdcdata$Total.Deaths)\n\n[1] 459491.2"
+  },
+  {
+    "objectID": "cdcdata-exercise/cdcdata-exercise.html#summary-of-data-for-part-2",
+    "href": "cdcdata-exercise/cdcdata-exercise.html#summary-of-data-for-part-2",
+    "title": "CDC Data Exercise",
+    "section": "1.3 Summary of data for Part 2",
+    "text": "1.3 Summary of data for Part 2\n\n\n\n\n\n\n\n\nVariable\nMean\nStandard Deviation\n\n\n\n\nPneumonia..Influenza..or.COVID.19.Deaths\n11629.85\n66245.64\n\n\nInfluenza.Deaths\n150.4058\n826.2635\n\n\nPneumonia.Deaths\n7705.152\n43860.05\n\n\nCOVID.19.Deaths\n7596.808\n43164.85\n\n\nTotal.Deaths\n81653.12\n459491.2\n\n\n\nI had some issues finding a dataset that I wanted to use, if this dataset gives you any trouble when attempting to replicate it synthetically, let me know."
+  },
+  {
     "objectID": "presentation-exercise/presentation-exercise.html",
     "href": "presentation-exercise/presentation-exercise.html",
     "title": "Presentation Exercise",

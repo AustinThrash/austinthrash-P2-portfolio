@@ -1,0 +1,193 @@
+---
+title: "CDC Data Exercise"
+author: Austin Thrash
+date: today
+format:
+  html:
+    toc: true
+    toc-location: left
+    number-sections: true
+    highlight-style: github
+---
+
+## Importing packages
+
+```{r}
+library(here)
+library(readr)
+library(gridExtra)
+library(grid)
+library(ggplot2)
+library(dplyr)
+```
+
+## Importing data
+
+```{r}
+# This chunk is used to import that data.
+
+# Define the location of the data file
+data_location <- here::here("cdcdata-exercise", "cdcdata_sample.csv")
+
+# Read the CSV file into a dataframe
+cdcdata <- read_csv(data_location)
+
+# View the first few rows of the dataframe
+head(cdcdata)
+```
+
+# Exploring the data
+
+The dataset I selected is '**Provisional COVID-19 Deaths by Sex and Age**' from the CDC website. The dataset details deaths involving COVID-19, pneumonia, and influenza reported to NCHS by sex, age group, and jurisdiction of occurrence. I took a sample of this dataset, it originally had 138K entries that were grouped by how they were collected (by month, by year, by total), I took the 'By Total' group and dropped NA entries, in turn creating a dataset with 1305 entries.
+
+Below is a table describing the variables I will be using from the dataset:
+
+| Variable                                 | Description                                   |
+|------------------------------------------|-----------------------------------------------|
+| State                                    | Jurisdiction of occurence                     |
+| Sex                                      | Sex                                           |
+| Age Group                                | Age Group                                     |
+| COVID-19 Deaths                          | Deaths involving COVID-19                     |
+| Pneumonia Deaths                         | Pneumonia Deaths                              |
+| Influenza Deaths                         | Influenza Deaths                              |
+| Pneumonia, Influenza, or COVID-19 Deaths | Deaths with Pneumonia, Influenza, or COVID-19 |
+| Total Deaths                             | Deaths from all causes of death               |
+
+Link:
+
+[CDC Dataset Source](https://data.cdc.gov/NCHS/Provisional-COVID-19-Deaths-by-Sex-and-Age/9bhg-hcku/about_data)
+
+## Cleaning data
+
+```{r}
+# This chunk will be used to clean the data. The data was cleaned prior, we really just need to drop the columns we arent using.
+
+# Removing unused columns
+cdcdata$`Data As Of` <- NULL
+cdcdata$`Start Date` <- NULL
+cdcdata$`End Date` <- NULL
+cdcdata$Group <- NULL
+
+names(cdcdata) <- make.names(names(cdcdata))
+```
+
+## Exploratory Analysis
+
+### Summary()
+
+```{r}
+summary(cdcdata)
+```
+
+### Distributions
+
+plots should include percentages if categorical, for continuous, plot and then summarize its mean and standard dev
+
+```{r}
+# Calculate counts and percentages for Age Group
+cdcdata_summary <- cdcdata %>%
+  group_by(Age.Group) %>%
+  summarise(count = n()) %>%
+  mutate(percentage = count / sum(count) * 100)
+
+# Plot with percentage labels
+ggplot(cdcdata_summary, aes(x = Age.Group, y = count)) + 
+  geom_bar(stat = "identity", fill = "salmon", color = "black") +
+  geom_text(aes(label = paste0(round(percentage, 1), "%")), vjust = -0.5) +
+  labs(title = "Age Group", x = "Age Group", y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+# Calculate counts and percentages for Sex
+cdcdata_summary <- cdcdata %>%
+  group_by(Sex) %>%
+  summarise(count = n()) %>%
+  mutate(percentage = count / sum(count) * 100)
+
+# Plot with percentage labels
+ggplot(cdcdata_summary, aes(x = Sex, y = count)) + 
+  geom_bar(stat = "identity", fill = "salmon", color = "black") +
+  geom_text(aes(label = paste0(round(percentage, 1), "%")), vjust = -0.5) +
+  labs(title = "Sex", x = "Sex", y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(cdcdata, aes_string(x = "Pneumonia..Influenza..or.COVID.19.Deaths")) + 
+        geom_bar(fill = "salmon", color = "black") +
+        labs(title = "Pneumonia, Influenza, or COVID-19 Deaths") +
+        theme_minimal()
+```
+
+```{r}
+ggplot(cdcdata, aes_string(x = "Influenza.Deaths")) + 
+        geom_histogram(binwidth = 1, fill = "salmon", color = "black") +
+        labs(title = "Influenza Deaths") +
+        theme_minimal()
+```
+
+```{r}
+ggplot(cdcdata, aes_string(x = "Pneumonia.Deaths")) + 
+        geom_bar(fill = "salmon", color = "black") +
+        labs(title = "Pneumonia Deaths") +
+        theme_minimal()
+```
+
+```{r}
+ggplot(cdcdata, aes_string(x = "COVID.19.Deaths")) + 
+        geom_bar(fill = "salmon", color = "black") +
+        labs(title = "COVID-19 Deaths") +
+        theme_minimal()
+```
+
+```{r}
+ggplot(cdcdata, aes_string(x = "Total.Deaths")) + 
+        geom_bar(fill = "salmon", color = "black") +
+        labs(title = "Total Deaths") +
+        theme_minimal()
+```
+
+```{r}
+
+mean(cdcdata$Pneumonia..Influenza..or.COVID.19.Deaths)
+sd(cdcdata$Pneumonia..Influenza..or.COVID.19.Deaths)
+```
+
+```{r}
+mean(cdcdata$Influenza.Deaths)
+sd(cdcdata$Influenza.Deaths)
+```
+
+```{r}
+mean(cdcdata$Pneumonia.Deaths)
+sd(cdcdata$Pneumonia.Deaths)
+```
+
+```{r}
+mean(cdcdata$COVID.19.Deaths)
+sd(cdcdata$COVID.19.Deaths)
+```
+
+```{r}
+mean(cdcdata$Total.Deaths)
+sd(cdcdata$Total.Deaths)
+```
+
+## Summary of data for Part 2
+
+| Variable                                 | Mean     | Standard Deviation |
+|------------------------------------------|----------|--------------------|
+| Pneumonia..Influenza..or.COVID.19.Deaths | 11629.85 | 66245.64           |
+| Influenza.Deaths                         | 150.4058 | 826.2635           |
+| Pneumonia.Deaths                         | 7705.152 | 43860.05           |
+| COVID.19.Deaths                          | 7596.808 | 43164.85           |
+| Total.Deaths                             | 81653.12 | 459491.2           |
+
+I had some issues finding a dataset that I wanted to use, if this dataset gives you any trouble when attempting to replicate it synthetically, let me know.
+
+# Making synthetic data
+
+```{r}
+
+```
