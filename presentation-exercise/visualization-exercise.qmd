@@ -1,0 +1,474 @@
+---
+title: "Visualization Exercise"
+author: Austin Thrash
+date: today
+format:
+  html:
+    toc: true
+    toc-location: left
+    number-sections: true
+    highlight-style: github
+---
+
+This Quarto file contains the prompts and code output by the machine learning model for the presentation exercise.
+
+# Original Prompt - Graph
+
+"How can i go about recreating this graph using the attached dataset" attached was a photo of the graph as well as the dataset used to create it. The model used was ChatGPT 4o.
+
+### Output
+
+![](screenshots/chatgpt_output_1)
+
+The graph above visualizes the presidential approval and disapproval ratings over time using the provided dataset. To closely match the original graph you shared, we can refine the plot by smoothing the lines and adjusting the presentation of the data points and confidence intervals.
+
+#### Code
+
+import pandas as pd
+
+import matplotlib.pyplot as plt
+
+import matplotlib.dates as mdates
+
+\# Load dataset
+
+data = pd.read_csv('path_to_your_dataset.csv')
+
+data\['start_date'\] = pd.to_datetime(data\['start_date'\])
+
+\# Calculate rolling averages and standard deviations
+
+data\['approve_smooth'\] = data\['yes'\].rolling(window=7, min_periods=1).mean()
+
+data\['disapprove_smooth'\] = data\['no'\].rolling(window=7, min_periods=1).mean()
+
+data\['approve_std'\] = data\['yes'\].rolling(window=7, min_periods=1).std()
+
+data\['disapprove_std'\] = data\['no'\].rolling(window=7, min_periods=1).std()
+
+\# Calculate confidence intervals
+
+data\['approve_ci'\] = 1.96 \* data\['approve_std'\]
+
+data\['disapprove_ci'\] = 1.96 \* data\['disapprove_std'\]
+
+\# Drop NaNs
+
+data = data.dropna(subset=\['approve_smooth', 'disapprove_smooth', 'approve_ci', 'disapprove_ci'\])
+
+\# Plot
+
+plt.figure(figsize=(14, 7))
+
+plt.scatter(data\['start_date'\], data\['yes'\], color='green', alpha=0.3, label='Approve Polls')
+
+plt.scatter(data\['start_date'\], data\['no'\], color='purple', alpha=0.3, label='Disapprove Polls')
+
+plt.plot(data\['start_date'\], data\['approve_smooth'\], color='green', label='Approve')
+
+plt.plot(data\['start_date'\], data\['disapprove_smooth'\], color='purple', label='Disapprove')
+
+plt.fill_between(data\['start_date'\], data\['approve_smooth'\] - data\['approve_ci'\], data\['approve_smooth'\] + data\['approve_ci'\], color='green', alpha=0.2)
+
+plt.fill_between(data\['start_date'\], data\['disapprove_smooth'\] - data\['disapprove_ci'\], data\['disapprove_smooth'\] + data\['disapprove_ci'\], color='purple', alpha=0.2)
+
+plt.xlabel('Date')
+
+plt.ylabel('Percentage')
+
+plt.title('Presidential Approval and Disapproval Ratings')
+
+plt.legend()
+
+plt.gca().xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+
+plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b. %Y'))
+
+plt.grid(True)
+
+plt.xticks(rotation=45)
+
+plt.ylim(20, 80)
+
+plt.xlim(data\['start_date'\].min(), data\['start_date'\].max())
+
+plt.show()
+
+## Revision 1 - Graph
+
+"Can you give me the code to do this in R studio"
+
+### Output
+
+Sure, here is the equivalent code in R for loading the dataset, calculating rolling averages and confidence intervals, and plotting the graph using `ggplot2`:
+
+#### Code
+
+\# Load necessary libraries
+
+library(ggplot2)
+
+library(dplyr)
+
+library(zoo)
+
+\# Load the dataset
+
+data \<- read.csv('path_to_your_dataset.csv')
+
+\# Convert start_date to Date type
+
+data\$start_date \<- as.Date(data\$start_date)
+
+\# Calculate rolling averages and standard deviations
+
+data \<- data %\>%
+
+mutate(approve_smooth = rollmean(yes, 7, fill = NA, align = 'right'),
+
+disapprove_smooth = rollmean(no, 7, fill = NA, align = 'right'),
+
+approve_std = rollapply(yes, 7, sd, fill = NA, align = 'right'),
+
+disapprove_std = rollapply(no, 7, sd, fill = NA, align = 'right'))
+
+\# Calculate confidence intervals
+
+data \<- data %\>%
+
+mutate(approve_ci = 1.96 \* (approve_std / sqrt(7)),
+
+disapprove_ci = 1.96 \* (disapprove_std / sqrt(7)))
+
+\# Drop rows with NA values
+
+data \<- na.omit(data)
+
+\# Plot the graph
+
+ggplot(data, aes(x = start_date)) +
+
+geom_point(aes(y = yes), color = 'green', alpha = 0.3) +
+
+geom_point(aes(y = no), color = 'purple', alpha = 0.3) +
+
+geom_line(aes(y = approve_smooth), color = 'green') +
+
+geom_line(aes(y = disapprove_smooth), color = 'purple') +
+
+geom_ribbon(aes(ymin = approve_smooth - approve_ci, ymax = approve_smooth + approve_ci), fill = 'green', alpha = 0.2) +
+
+geom_ribbon(aes(ymin = disapprove_smooth - disapprove_ci, ymax = disapprove_smooth + disapprove_ci), fill = 'purple', alpha = 0.2) +
+
+labs(title = 'Presidential Approval and Disapproval Ratings',
+
+x = 'Date',
+
+y = 'Percentage') +
+
+scale_x_date(date_labels = "%b %Y", date_breaks = "3 months") +
+
+theme_minimal() +
+
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+
+ylim(20, 80)
+
+## Adjustments - Graph
+
+From the first revision of the code, I modified it to use plotly and become interactive like the original graph. I also altered some of the colors to more closely replicate the original graph.
+
+# Original Prompt - Table
+
+"Using this same data, how would i go about creating a publication quality table using the gt package in R"
+
+### Output
+
+To create a publication-quality table using the `gt` package in R, you can follow these steps:
+
+1.  **Load the necessary libraries**.
+
+2.  **Prepare the data** for the table.
+
+3.  **Create the table** with the `gt` package.
+
+4.  **Style the table** to improve its appearance for publication.
+
+Here is a step-by-step guide to create and style the table using the `gt` package:
+
+#### Code
+
+\# Load necessary libraries
+
+library(dplyr)
+
+library(zoo)
+
+library(gt)
+
+\# Load the dataset
+
+data \<- read.csv('/mnt/data/president_approval_polls.csv')
+
+\# Convert start_date to Date type using the correct format
+
+data\$start_date \<- as.Date(data\$start_date, format = "%Y-%m-%d")
+
+\# Remove rows with non-finite start_date values
+
+data \<- data %\>% filter(!is.na(start_date) & !is.infinite(start_date))
+
+\# Calculate rolling averages and standard deviations with a larger window size
+
+data \<- data %\>%
+
+mutate(approve_smooth = rollmean(yes, 30, fill = NA, align = 'right'),
+
+disapprove_smooth = rollmean(no, 30, fill = NA, align = 'right'),
+
+approve_std = rollapply(yes, 30, sd, fill = NA, align = 'right'),
+
+disapprove_std = rollapply(no, 30, sd, fill = NA, align = 'right'))
+
+\# Calculate confidence intervals
+
+data \<- data %\>%
+
+mutate(approve_ci = 1.96 \* (approve_std / sqrt(30)),
+
+disapprove_ci = 1.96 \* (disapprove_std / sqrt(30)))
+
+\# Prepare a summary dataset for the table
+
+summary_data \<- data %\>%
+
+select(start_date, approve_smooth, disapprove_smooth, approve_ci, disapprove_ci) %\>%
+
+filter(!is.na(approve_smooth) & !is.na(disapprove_smooth)) %\>%
+
+summarize(
+
+start_date = max(start_date),
+
+approve_smooth = last(approve_smooth),
+
+disapprove_smooth = last(disapprove_smooth),
+
+approve_ci_low = last(approve_smooth - approve_ci),
+
+approve_ci_high = last(approve_smooth + approve_ci),
+
+disapprove_ci_low = last(disapprove_smooth - disapprove_ci),
+
+disapprove_ci_high = last(disapprove_smooth + disapprove_ci)
+
+)
+
+\# Create the table using gt
+
+table \<- gt(summary_data) %\>%
+
+tab_header(
+
+title = "Presidential Approval and Disapproval Ratings",
+
+subtitle = "Summary Statistics"
+
+) %\>%
+
+fmt_percent(
+
+columns = vars(approve_smooth, disapprove_smooth, approve_ci_low, approve_ci_high, disapprove_ci_low, disapprove_ci_high),
+
+decimals = 2
+
+) %\>%
+
+cols_label(
+
+start_date = "Date",
+
+approve_smooth = "Approval Rating",
+
+disapprove_smooth = "Disapproval Rating",
+
+approve_ci_low = "Approval CI Low",
+
+approve_ci_high = "Approval CI High",
+
+disapprove_ci_low = "Disapproval CI Low",
+
+disapprove_ci_high = "Disapproval CI High"
+
+) %\>%
+
+cols_align(
+
+align = "center",
+
+columns = everything()
+
+) %\>%
+
+tab_options(
+
+table.width = pct(100),
+
+column_labels.font.size = 12,
+
+table.font.size = 12,
+
+heading.title.font.size = 14,
+
+heading.subtitle.font.size = 12
+
+)
+
+\# Print the table
+
+table
+
+## Revision 1 - Table
+
+The plot it displayed seem to be producing weird results so I gave it a second prompt to fix this issue.
+
+**Prompt:**
+
+"Instead of one date can you do all dates because this is the current output and it looks incorrect/inaccuracte because the percentages are displaying higher than 100%
+
+Presidential Approval and Disapproval Ratings
+Summary Statistics
+Date	Approval Rating	Disapproval Rating	Approval CI Low	Approval CI High	Disapproval CI Low	Disapproval CI High
+23-08-07	5,324.90%	3,385.30%	5,028.18%	5,621.62%	2,962.38%	3,808.22%"
+
+**Code:**
+
+\# Load necessary libraries
+
+library(dplyr)
+
+library(zoo)
+
+library(gt)
+
+\# Load the dataset
+
+data \<- read.csv('/mnt/data/president_approval_polls.csv')
+
+\# Convert start_date to Date type using the correct format
+
+data\$start_date \<- as.Date(data\$start_date, format = "%Y-%m-%d")
+
+\# Remove rows with non-finite start_date values
+
+data \<- data %\>% filter(!is.na(start_date) & !is.infinite(start_date))
+
+\# Calculate rolling averages and standard deviations with a larger window size
+
+data \<- data %\>%
+
+mutate(approve_smooth = rollmean(yes, 30, fill = NA, align = 'right'),
+
+disapprove_smooth = rollmean(no, 30, fill = NA, align = 'right'),
+
+approve_std = rollapply(yes, 30, sd, fill = NA, align = 'right'),
+
+disapprove_std = rollapply(no, 30, sd, fill = NA, align = 'right'))
+
+\# Calculate confidence intervals
+
+data \<- data %\>%
+
+mutate(approve_ci = 1.96 \* (approve_std / sqrt(30)),
+
+disapprove_ci = 1.96 \* (disapprove_std / sqrt(30)))
+
+\# Prepare a summary dataset for the table
+
+summary_data \<- data %\>%
+
+select(start_date, approve_smooth, disapprove_smooth, approve_ci, disapprove_ci) %\>%
+
+filter(!is.na(approve_smooth) & !is.na(disapprove_smooth)) %\>%
+
+summarize(
+
+start_date = max(start_date),
+
+approve_smooth = last(approve_smooth),
+
+disapprove_smooth = last(disapprove_smooth),
+
+approve_ci_low = last(approve_smooth - approve_ci),
+
+approve_ci_high = last(approve_smooth + approve_ci),
+
+disapprove_ci_low = last(disapprove_smooth - disapprove_ci),
+
+disapprove_ci_high = last(disapprove_smooth + disapprove_ci)
+
+)
+
+\# Create the table using gt
+
+table \<- gt(summary_data) %\>%
+
+tab_header(
+
+title = "Presidential Approval and Disapproval Ratings",
+
+subtitle = "Summary Statistics"
+
+) %\>%
+
+fmt_percent(
+
+columns = vars(approve_smooth, disapprove_smooth, approve_ci_low, approve_ci_high, disapprove_ci_low, disapprove_ci_high),
+
+decimals = 2
+
+) %\>%
+
+cols_label(
+
+start_date = "Date",
+
+approve_smooth = "Approval Rating",
+
+disapprove_smooth = "Disapproval Rating",
+
+approve_ci_low = "Approval CI Low",
+
+approve_ci_high = "Approval CI High",
+
+disapprove_ci_low = "Disapproval CI Low",
+
+disapprove_ci_high = "Disapproval CI High"
+
+) %\>%
+
+cols_align(
+
+align = "center",
+
+columns = everything()
+
+) %\>%
+
+tab_options(
+
+table.width = pct(100),
+
+column_labels.font.size = 12,
+
+table.font.size = 12,
+
+heading.title.font.size = 14,
+
+heading.subtitle.font.size = 12
+
+)
+
+\# Print the table
+
+table

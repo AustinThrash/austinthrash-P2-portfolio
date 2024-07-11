@@ -187,13 +187,14 @@ sd(cdcdata$Total.Deaths)
 
 I had some issues finding a dataset that I wanted to use, if this dataset gives you any trouble when attempting to replicate it synthetically, let me know.
 
-
 # Making synthetic data
+
 **This section contributed by Nicholas Stevenson**
 
-To create the synthetic dataset the prompt I used was: "Create a dataset replicating an already exisiting dataset in R studio, The variables I'd like replicate is 'State'(character), 'Sex'(character), 'Age.Group'(character), 'Covid.19.Deaths'(number), 'Total.Deaths'(number), 'Pneumonia.Deaths'(number), 'Influenza.Deaths'(number). There are 1343 observations." 
+To create the synthetic dataset the prompt I used was: "Create a dataset replicating an already exisiting dataset in R studio, The variables I'd like replicate is 'State'(character), 'Sex'(character), 'Age.Group'(character), 'Covid.19.Deaths'(number), 'Total.Deaths'(number), 'Pneumonia.Deaths'(number), 'Influenza.Deaths'(number). There are 1343 observations."
 
-I followed this was a series of descriptive statements by referencing the mean and standard deviation of the original data as well as referencing the original charts and whether they were normal or skewed. 
+I followed this was a series of descriptive statements by referencing the mean and standard deviation of the original data as well as referencing the original charts and whether they were normal or skewed.
+
 ```{r}
 set.seed(123) # for reproducibility
 
@@ -236,7 +237,6 @@ synthetic_data <- synthetic_data %>%
 head(synthetic_data)
 ```
 
-
 ```{r}
 #Histogram of Total Deaths
 ggplot(synthetic_data, aes(x = Total.Deaths)) +
@@ -276,4 +276,3 @@ ggplot(sex_counts, aes(x = Sex, y = Percentage, fill = Sex)) +
   theme_minimal() +
   theme(legend.position = "none")
 ```
-
