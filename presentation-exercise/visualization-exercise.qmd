@@ -336,10 +336,7 @@ The plot it displayed seem to be producing weird results so I gave it a second p
 
 "Instead of one date can you do all dates because this is the current output and it looks incorrect/inaccuracte because the percentages are displaying higher than 100%
 
-Presidential Approval and Disapproval Ratings
-Summary Statistics
-Date	Approval Rating	Disapproval Rating	Approval CI Low	Approval CI High	Disapproval CI Low	Disapproval CI High
-23-08-07	5,324.90%	3,385.30%	5,028.18%	5,621.62%	2,962.38%	3,808.22%"
+Presidential Approval and Disapproval Ratings Summary Statistics Date Approval Rating Disapproval Rating Approval CI Low Approval CI High Disapproval CI Low Disapproval CI High 23-08-07 5,324.90% 3,385.30% 5,028.18% 5,621.62% 2,962.38% 3,808.22%"
 
 **Code:**
 
