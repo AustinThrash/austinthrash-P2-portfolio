@@ -1,5 +1,413 @@
 ---
-title: "Tidy Tuesday Exercise"
+title: "TidyTuesday Exercise"
+author: Austin Thrash
+date: today
+format:
+  html:
+    toc: true
+    toc-location: left
+    number-sections: true
+    highlight-style: github
 ---
 
-Placeholder file for the future Tidy Tuesday exercise.
+## Data
+
+Load, wrangle and explore the data. The EDA part involves making tables/figures to get an idea what your data is about. By now you know this is an iterative procedure, so it's ok to have these parts of the process/code intertwined.
+
+### Load/Clean the data
+
+```{r}
+library(tidytuesdayR)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(summarytools)
+library(plotly)
+```
+
+```{r}
+# Clean data provided by <https://github.com/kkakey/American_Idol>. No cleaning was necessary.
+auditions <- readr::read_csv("https://raw.githubusercontent.com/kkakey/American_Idol/main/metadata/auditions.csv")
+eliminations <- readr::read_csv("https://raw.githubusercontent.com/kkakey/American_Idol/main/metadata/elimination_chart.csv")
+finalists <- readr::read_csv("https://raw.githubusercontent.com/kkakey/American_Idol/main/metadata/finalists.csv")
+ratings <- readr::read_csv("https://raw.githubusercontent.com/kkakey/American_Idol/main/metadata/ratings.csv")
+seasons <- readr::read_csv("https://raw.githubusercontent.com/kkakey/American_Idol/main/metadata/seasons.csv")
+songs <- readr::read_csv("https://raw.githubusercontent.com/kkakey/American_Idol/main/Songs/songs_all.csv")
+```
+
+The data cleaning was provided by kkakkey in the ReadMe.md for TidyTuesday 2024-07-23 on Github. Further cleaning will occur if applicable to the hypothesis.
+
+### Explore the data
+
+```{r}
+# Inspect data structure and summaries
+str(auditions)
+summary(auditions)
+head(auditions)
+
+str(eliminations)
+summary(eliminations)
+head(eliminations)
+
+str(finalists)
+summary(finalists)
+head(finalists)
+
+str(ratings)
+summary(ratings)
+head(ratings)
+
+str(seasons)
+summary(seasons)
+head(seasons)
+
+str(songs)
+summary(songs)
+head(songs)
+```
+
+```{r}
+# Exploratory Data Analysis (EDA)
+
+# Number of auditions by city
+auditions %>%
+  count(audition_city) %>%
+  arrange(desc(n)) %>%
+  ggplot(aes(x = reorder(audition_city, n), y = n)) +
+  geom_bar(stat = 'identity') +
+  coord_flip() +
+  labs(title = 'Number of Auditions by City', x = 'City', y = 'Number of Auditions')
+
+# Distribution of eliminations by place and season
+eliminations %>%
+  ggplot(aes(x = season, fill = as.factor(place))) +
+  geom_bar() +
+  labs(title = 'Eliminations by Season and Place', x = 'Season', y = 'Count', fill = 'Place')
+
+# Summary of finalists' hometowns
+finalists %>%
+  count(Hometown) %>%
+  arrange(desc(n)) %>%
+  head(10) %>%
+  ggplot(aes(x = reorder(Hometown, n), y = n)) +
+  geom_bar(stat = 'identity') +
+  coord_flip() +
+  labs(title = 'Top 10 Finalists\' Hometowns', x = 'Hometown', y = 'Number of Finalists')
+
+
+# Create a static ggplot2 plot
+rating_plot <- ratings %>%
+  ggplot(aes(x = episode, y = `18_49_rating_share`, group = season, color = as.factor(season))) +
+  geom_line() +
+  labs(title = 'TV Ratings Over Seasons', x = 'Episode', y = '18-49 Rating Share', color = 'Season') +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+
+# Convert the ggplot2 plot to an interactive plotly plot
+interactive_rating_plot <- ggplotly(rating_plot)
+
+# Display the interactive plot
+interactive_rating_plot
+
+# Winners and Runners-up by Season
+seasons %>%
+  select(season, winner, runner_up) %>%
+  knitr::kable(caption = 'Winners and Runners-up by Season')
+
+# Most popular songs performed on the show
+songs %>%
+  count(song, sort = TRUE) %>%
+  head(10) %>%
+  ggplot(aes(x = reorder(song, n), y = n)) +
+  geom_bar(stat = 'identity') +
+  coord_flip() +
+  labs(title = 'Top 10 Most Popular Songs Performed', x = 'Song', y = 'Number of Performances')
+
+
+```
+
+## Question/Hypothesis
+
+Once you understand the data sufficiently, formulate a question/hypothesis. This will determine your outcome of interest and, if applicable, main predictor(s) of interest. Since we don't know the data yet, it might be that the question is a bit contrived and not actually too interesting, but I'm sure there will be more than one potentially reasonable question one can ask, no matter what the data will be. If it turns out that the data just doesn't easily work for asking a question, create some synthetic data/variables to augment the exisiting data such that it will be possible to ask a question and do some machine learning modeling.
+
+### Outcome of Interest
+
+[Influence of Song Choice on Ratings:]{.underline}
+
+**Question:** Does the choice of song theme or specific songs performed by contestants influence the TV ratings for an episode?
+
+**Hypothesis:** Episodes with more popular or trending song themes and songs result in higher TV ratings.
+
+## Further Pre-Processing
+
+Once you determine the question and thus your outcome and main predictors, further pre-process and clean the data as needed. Then split into train/test. (It might be that the data is too small for this split to make sense in real life but for this exercise, we'll just do it.)
+
+### Cleaning the data for hypothesis
+
+```{r}
+# Load necessary libraries
+library(readr)
+library(dplyr)
+library(lubridate)
+library(caret)
+library(randomForest)
+library(gbm)
+library(ggplot2)
+library(xgboost)
+library(Matrix)
+
+# reload the appropriate data
+songs <- readr::read_csv('https://raw.githubusercontent.com/kkakey/American_Idol/main/Songs/songs_all.csv')
+ratings <- readr::read_csv('https://raw.githubusercontent.com/kkakey/American_Idol/main/metadata/ratings.csv')
+
+# Convert 'airdate' in ratings to Date format
+ratings <- ratings %>%
+  mutate(airdate = mdy(airdate))
+
+songs <- songs %>%
+  mutate(season = as.numeric(gsub("Season_", "", season)),
+         week_date = as.Date(substr(week, 1, 8), format = "%Y%m%d"))
+
+# Merge songs and ratings datasets on 'season' and 'week_date' with 'airdate'
+data <- merge(songs, ratings, by.x = c("season", "week_date"), by.y = c("season", "airdate"), all.x = TRUE)
+
+
+data <- data %>%
+  select(season, show_number, song, '18_49_rating_share') %>%
+  filter(!is.na('18_49_rating_share'))  # Ensure no missing ratings
+
+top_songs <- names(sort(table(data$song), decreasing = TRUE))[1:50]
+data <- data %>%
+  mutate(song = ifelse(song %in% top_songs, song, "Other"))
+
+
+# Convert categorical variables to factors
+data <- data %>%
+  mutate(song = as.factor(song))
+
+# Ensure '18_49_rating_share' is numeric
+data$'18_49_rating_share' <- as.numeric(data$'18_49_rating_share')
+
+data <- data %>%
+  filter(complete.cases(.))
+```
+
+### Train/Test Split
+
+```{r}
+# Set seed for reproducibility
+set.seed(123)
+
+# Split the data into training and testing sets (80% train, 20% test)
+train_index <- createDataPartition(data$'18_49_rating_share', p = 0.8, list = FALSE)
+train_data <- data[train_index, ]
+test_data <- data[-train_index, ]
+```
+
+## Fitting Models
+
+Fit at least 3 different model types to the data using the tidymodels framework we practiced. Use the CV approach for model training/fitting. Explore the quality of each model by looking at performance, residuals, uncertainty, etc. All of this should still be evaluated using the training/CV data. You can of course recycle code from previous exercises, but I also encourage you to explore further, e.g. try different ML models or use different metrics. You might have to do that anyway, depending on the data and your question/outcome.
+
+### Model #1: Linear Regression
+
+```{r}
+# Load necessary libraries
+library(caret)
+library(dplyr)
+
+# Ensure the categorical variables are factors with consistent levels
+all_songs <- unique(c(train_data$song, test_data$song))
+
+train_data <- train_data %>%
+  mutate(song = factor(song, levels = all_songs))
+
+test_data <- test_data %>%
+  mutate(song = factor(song, levels = all_songs))
+
+# Create dummy variables for categorical features
+train_data_dummy <- train_data %>%
+  select(-'18_49_rating_share') %>%
+  model.matrix(~ . - 1, data = .)
+
+test_data_dummy <- test_data %>%
+  select(-'18_49_rating_share') %>%
+  model.matrix(~ . - 1, data = .)
+
+# Convert to data frames and add the target variable
+train_data_dummy <- as.data.frame(train_data_dummy)
+train_data_dummy$'18_49_rating_share' <- train_data$'18_49_rating_share'
+
+test_data_dummy <- as.data.frame(test_data_dummy)
+test_data_dummy$'18_49_rating_share' <- test_data$'18_49_rating_share'
+
+# Train a Linear Regression model
+lm_model <- lm(`18_49_rating_share` ~ ., data = train_data_dummy)
+
+# Predict and evaluate the model
+lm_pred <- predict(lm_model, newdata = train_data_dummy)
+lm_rmse <- sqrt(mean((lm_pred - train_data_dummy$'18_49_rating_share')^2))
+
+cat("Linear Regression RMSE:", lm_rmse, "\n")
+```
+
+### Model #2: Random Forrest
+
+```{r}
+# Load necessary libraries
+library(randomForest)
+library(dplyr)
+
+# Ensure the categorical variables are factors with consistent levels
+all_songs <- unique(c(train_data$song, test_data$song))
+
+train_data <- train_data %>%
+  mutate(song = factor(song, levels = all_songs))
+
+test_data <- test_data %>%
+  mutate(song = factor(song, levels = all_songs))
+
+# Train a Random Forest model
+rf_model <- randomForest(`18_49_rating_share` ~ song, data = train_data, ntree = 100)
+
+# Predict and evaluate the model
+rf_pred <- predict(rf_model, newdata = train_data)
+rf_rmse <- sqrt(mean((rf_pred - train_data$'18_49_rating_share')^2))
+
+cat("Random Forest RMSE:", rf_rmse, "\n")
+```
+
+### Model #3: Gradient Boosting
+
+```{r}
+# Load necessary libraries
+library(e1071)
+library(caret)
+library(dplyr)
+
+# Ensure the categorical variables are factors
+train_data <- train_data %>%
+  mutate(across(where(is.character), as.factor))
+
+test_data <- test_data %>%
+  mutate(across(where(is.character), as.factor))
+
+# Create dummy variables for categorical features
+train_data_dummy <- train_data %>%
+  select(-'18_49_rating_share') %>%
+  model.matrix(~ . - 1, data = .)
+
+test_data_dummy <- test_data %>%
+  select(-'18_49_rating_share') %>%
+  model.matrix(~ . - 1, data = .)
+
+# Convert to data frames and add the target variable
+train_data_dummy <- as.data.frame(train_data_dummy)
+train_data_dummy$'18_49_rating_share' <- train_data$'18_49_rating_share'
+
+test_data_dummy <- as.data.frame(test_data_dummy)
+test_data_dummy$'18_49_rating_share' <- test_data$'18_49_rating_share'
+
+# Train a Support Vector Machine (SVM) model
+svm_model <- svm(`18_49_rating_share` ~ ., data = train_data_dummy, kernel = "linear")
+
+# Predict and evaluate the model
+svm_pred <- predict(svm_model, newdata = train_data_dummy)
+svm_rmse <- sqrt(mean((svm_pred - train_data_dummy$'18_49_rating_share')^2))
+
+cat("SVM RMSE:", svm_rmse, "\n")
+```
+
+## Determine Best Model
+
+Based on the model evaluations and your scientific question/hypothesis, decide on one model you think is overall best. Explain why. It doesn't have to be the model with the best performance. You make the choice, just explain why you picked the one you picked.
+
+```{r}
+# Create a data frame for the RMSE values
+rmse_df <- data.frame(
+  Model = c("Linear Regression", "Random Forest", "SVM"),
+  RMSE = c(lm_rmse, rf_rmse, svm_rmse)
+)
+
+# Plot the RMSE values
+ggplot(rmse_df, aes(x = Model, y = RMSE, fill = Model)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Model Performance Comparison",
+       x = "Model",
+       y = "RMSE") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+```
+
+Based on the RSME, the Linear Regression model performed the best with a value of 1.557901. However, using this metric does not tell us the overall performance, just gives us the ability to compare it to our other models. This metric was generated by using the just the training set, the test set has yet to be used.
+
+## Honest Evaluation (One Attempt)
+
+As a final, somewhat honest assessment of the quality of the model you chose, evaluate it (performance, residuals, uncertainty, etc.) on the test data. This is the only time you are allowed to touch the test data, and only once.
+
+```{r}
+# Mean Absolute Error (MAE)
+lm_mae <- mean(abs(lm_pred - test_data_dummy$`18_49_rating_share`))
+
+# R-squared (R²)
+lm_r2 <- 1 - sum((lm_pred - test_data_dummy$`18_49_rating_share`)^2) / sum((test_data_dummy$`18_49_rating_share` - mean(test_data_dummy$`18_49_rating_share`))^2)
+
+# Adjusted R-squared
+n <- nrow(test_data_dummy)  # number of observations
+p <- length(lm_model$coefficients) - 1  # number of predictors
+lm_adj_r2 <- 1 - (1 - lm_r2) * ((n - 1) / (n - p - 1))
+
+# Mean Squared Error (MSE)
+lm_mse <- mean((lm_pred - test_data_dummy$`18_49_rating_share`)^2)
+
+# Display the metrics
+cat("Linear Regression RMSE:", lm_rmse, "\n")
+cat("Linear Regression MAE:", lm_mae, "\n")
+cat("Linear Regression R²:", lm_r2, "\n")
+cat("Linear Regression Adjusted R²:", lm_adj_r2, "\n")
+cat("Linear Regression MSE:", lm_mse, "\n")
+
+```
+
+These results came from using the best model to predict using the test set. Interpretation:
+
+-   Adjusted R-squaured: Since this value is negative, we can conclude that the model is performing worse than a horizontal line and is not useful for predicting rating.
+
+-   MSE: Relatively high, which reinforces the notion of bad model performance
+
+## Summary
+
+Summarize everything you did and found in a discussion. Make sure you discuss your findings with regard to your original question/hypothesis. What did you learn? If feasible, show a summary figure or table that illustrates your main scientific finding from this analysis.
+
+### Findings
+
+The hypothesis that episodes with specific songs result in higher TV ratings was not supported by the linear regression model. The model performed poorly, indicating that the song choice (as captured in this dataset) does not significantly influence the TV ratings.
+
+```{r}
+lm_pred <- predict(lm_model, newdata = test_data_dummy)
+# Create a data frame with actual and predicted values
+results_df <- data.frame(
+  Type = rep(c("Actual", "Predicted"), each = nrow(test_data_dummy)),
+  Value = c(test_data_dummy$`18_49_rating_share`, lm_pred)
+)
+
+# Add an identifier for the data points
+results_df <- results_df %>%
+  mutate(ID = rep(1:nrow(test_data_dummy), 2))
+
+# Plot the actual vs. predicted values
+ggplot(results_df, aes(x = ID, y = Value, color = Type)) +
+  geom_point(alpha = 0.6) +
+  labs(title = "Actual vs. Predicted Values",
+       x = "ID",
+       y = "18-49 Rating Share",
+       color = "Type") +
+  theme_minimal()
+
+
+```
+
+Here is a visual of the model performance, right away we can notice distinguishable problems such as the pattern in the errors. We can see clusters of wrong predictions, slowly rising and then dropping back down. Based on our other metrics and this plot I would have to conclude that none of the models (Linear Regression, Random Forest, SVM) provided strong predictive performance for the TV ratings based on song choice. The results suggest that other factors, not captured in this analysis, are likely more influential in determining TV ratings for "American Idol" episodes.
